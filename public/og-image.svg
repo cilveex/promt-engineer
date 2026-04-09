@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#070709"/>
+
+  <!-- Subtle grid lines -->
+  <line x1="0" y1="210" x2="1200" y2="210" stroke="#B8F060" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="420" x2="1200" y2="420" stroke="#B8F060" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="400" y1="0" x2="400" y2="630" stroke="#B8F060" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="800" y1="0" x2="800" y2="630" stroke="#B8F060" stroke-opacity="0.04" stroke-width="1"/>
+
+  <!-- Left accent bar -->
+  <rect x="80" y="220" width="5" height="120" rx="3" fill="#B8F060"/>
+
+  <!-- Headline -->
+  <text x="110" y="293" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="88" font-weight="700" fill="#EEEEF2" letter-spacing="-2">PROMPT ROUGE</text>
+
+  <!-- Subtitle -->
+  <text x="112" y="345" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="26" font-weight="400" fill="#8A8A9A" letter-spacing="6">AI PROMPT ENGINEER</text>
+
+  <!-- Bottom tag line -->
+  <text x="112" y="490" font-family="'Courier New', Courier, monospace" font-size="18" fill="#B8F060" opacity="0.7">Build structured AI prompts in 5 steps.</text>
+
+  <!-- Step pills -->
+  <rect x="112" y="518" width="82" height="28" rx="5" fill="#B8F06015" stroke="#B8F06040" stroke-width="1"/>
+  <text x="153" y="537" font-family="'Courier New', Courier, monospace" font-size="12" font-weight="700" fill="#B8F060" text-anchor="middle" letter-spacing="1">ROLE</text>
+
+  <rect x="204" y="518" width="82" height="28" rx="5" fill="#5DD8F515" stroke="#5DD8F540" stroke-width="1"/>
+  <text x="245" y="537" font-family="'Courier New', Courier, monospace" font-size="12" font-weight="700" fill="#5DD8F5" text-anchor="middle" letter-spacing="1">TASK</text>
+
+  <rect x="296" y="518" width="102" height="28" rx="5" fill="#FFAD3D15" stroke="#FFAD3D40" stroke-width="1"/>
+  <text x="347" y="537" font-family="'Courier New', Courier, monospace" font-size="12" font-weight="700" fill="#FFAD3D" text-anchor="middle" letter-spacing="1">CONTEXT</text>
+
+  <rect x="408" y="518" width="138" height="28" rx="5" fill="#F0527A15" stroke="#F0527A40" stroke-width="1"/>
+  <text x="477" y="537" font-family="'Courier New', Courier, monospace" font-size="12" font-weight="700" fill="#F0527A" text-anchor="middle" letter-spacing="1">CONSTRAINTS</text>
+
+  <rect x="556" y="518" width="96" height="28" rx="5" fill="#9B6EEA15" stroke="#9B6EEA40" stroke-width="1"/>
+  <text x="604" y="537" font-family="'Courier New', Courier, monospace" font-size="12" font-weight="700" fill="#9B6EEA" text-anchor="middle" letter-spacing="1">CLARIFY</text>
+
+  <!-- Domain -->
+  <text x="1120" y="580" font-family="'Courier New', Courier, monospace" font-size="16" fill="#3A3A44" text-anchor="end" letter-spacing="1">promtrouge.com</text>
+</svg>
