@@ -238,10 +238,10 @@ function QualityBar({ value, threshold, color }) {
         <div className="quality-bar" style={{ height: "100%", width: `${pct}%`, background: met ? color : "#38383E", borderRadius: 1 }} />
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
-        <span style={{ fontSize: 11, color: met ? color : "#5A5A6A", transition: "color 0.3s", fontFamily: "'DM Mono', monospace" }}>
+        <span style={{ fontSize: 11, color: met ? color : "#8A8A9A", transition: "color 0.3s", fontFamily: "'DM Mono', monospace" }}>
           {met ? "✓ Good detail level" : `${threshold - value} chars to go`}
         </span>
-        <span style={{ fontSize: 11, color: "#38383E", fontFamily: "'DM Mono', monospace" }}>{value}c</span>
+        <span style={{ fontSize: 11, color: "#7A7A80", fontFamily: "'DM Mono', monospace" }}>{value}c</span>
       </div>
     </div>
   );
@@ -257,14 +257,14 @@ function PowerCard({ pm, delay = 0 }) {
         <div style={{ fontSize: 22, lineHeight: 1 }}>{pm.icon}</div>
         <div>
           <div style={{ fontSize: 15, fontWeight: 600, color: "#EEEEF2", marginBottom: 3 }}>{pm.title}</div>
-          <div style={{ fontSize: 12, color: "#5A5A6A", lineHeight: 1.5 }}>{pm.use}</div>
+          <div style={{ fontSize: 12, color: "#8A8A9A", lineHeight: 1.5 }}>{pm.use}</div>
         </div>
       </div>
       <div style={{ padding: "12px 14px", background: "#0E0E12", borderRadius: "8px", fontSize: 13, color: "#B8F060", lineHeight: 1.7, fontStyle: "italic", flex: 1, fontFamily: "'DM Mono', monospace" }}>
         "{pm.prompt}"
       </div>
       <button className="btn" onClick={() => copyText(pm.prompt, () => { setCopied(true); setTimeout(() => setCopied(false), 2000); })}
-        style={{ padding: "9px 14px", background: copied ? "#0A1A0F" : "#161616", border: `1px solid ${copied ? "#1E4A2A" : "#262626"}`, borderRadius: "7px", color: copied ? "#4ABA74" : "#5A5A6A", fontSize: 12, letterSpacing: "0.04em", textAlign: "center", fontWeight: 500, transition: "all 0.15s" }}>
+        style={{ padding: "9px 14px", background: copied ? "#0A1A0F" : "#161616", border: `1px solid ${copied ? "#1E4A2A" : "#262626"}`, borderRadius: "7px", color: copied ? "#4ABA74" : "#8A8A9A", fontSize: 12, letterSpacing: "0.04em", textAlign: "center", fontWeight: 500, transition: "all 0.15s" }}>
         {copied ? "✓  Copied" : "Copy prompt"}
       </button>
     </div>
@@ -300,7 +300,7 @@ function EditableCard({ label, color, field, prefix, value, onChange }) {
           <span style={{ fontSize: 10, letterSpacing: "0.16em", color: color, fontWeight: 700, fontFamily: "'DM Mono', monospace" }}>{label}</span>
         </div>
         {isEditable && (
-          <span style={{ fontSize: 11, color: editing ? "#9898A8" : "#38383E", transition: "color 0.15s" }}>
+          <span style={{ fontSize: 11, color: editing ? "#9898A8" : "#7A7A80", transition: "color 0.15s" }}>
             {editing ? "⌘↵ save" : "✎ edit"}
           </span>
         )}
@@ -314,12 +314,12 @@ function EditableCard({ label, color, field, prefix, value, onChange }) {
               style={{ width: "100%", background: "#0E0E12", border: "none", outline: "none", padding: "12px 14px", fontSize: 13, color: "#EEEEF2", lineHeight: 1.7, resize: "vertical", fontFamily: "'DM Sans', sans-serif" }} />
             <div style={{ display: "flex", gap: 6, padding: "8px 12px 10px" }}>
               <button className="btn" onClick={e => { e.stopPropagation(); save(); }} style={{ padding: "5px 14px", background: color, border: "none", borderRadius: 5, color: "#0A0A0A", fontSize: 11, fontWeight: 700 }}>Save</button>
-              <button className="btn" onClick={e => { e.stopPropagation(); setDraft(value); setEditing(false); }} style={{ padding: "5px 14px", background: "transparent", border: "1px solid #2E2E3A", borderRadius: 5, color: "#5A5A6A", fontSize: 11 }}>Cancel</button>
-              <span style={{ fontSize: 10, color: "#38383E", alignSelf: "center", marginLeft: 4 }}>Esc to cancel</span>
+              <button className="btn" onClick={e => { e.stopPropagation(); setDraft(value); setEditing(false); }} style={{ padding: "5px 14px", background: "transparent", border: "1px solid #2E2E3A", borderRadius: 5, color: "#8A8A9A", fontSize: 11 }}>Cancel</button>
+              <span style={{ fontSize: 10, color: "#7A7A80", alignSelf: "center", marginLeft: 4 }}>Esc to cancel</span>
             </div>
           </div>
         ) : (
-          <div style={{ padding: "13px 14px", fontSize: 13, color: value ? "#B8B8B8" : "#38383E", lineHeight: 1.8, whiteSpace: "pre-wrap", fontStyle: value ? "normal" : "italic" }}>
+          <div style={{ padding: "13px 14px", fontSize: 13, color: value ? "#B8B8B8" : "#7A7A80", lineHeight: 1.8, whiteSpace: "pre-wrap", fontStyle: value ? "normal" : "italic" }}>
             {prefix}{value || "[empty — click to fill]"}
           </div>
         )}
@@ -438,28 +438,28 @@ export default function PromptGuide() {
 
   // ── Header ─────────────────────────────────────────────────────────────────
   const Header = () => (
-    <div style={{ background: "#070709", borderBottom: "1px solid #1E1E26", padding: isMobile ? "12px 16px" : "0 32px", height: isMobile ? "auto" : 56, display: "flex", alignItems: "center", gap: 16, position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(8px)" }}>
+    <div style={{ background: "#070709", borderBottom: "1px solid #1E1E26", padding: isMobile ? "10px 12px" : "0 32px", height: isMobile ? "auto" : 56, display: "flex", alignItems: "center", gap: 16, position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(8px)" }}>
       {/* Logo mark */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
         <div style={{ width: 3, height: 28, background: "#B8F060", borderRadius: 2 }} />
         <div>
-          <div style={{ fontFamily: "'Bebas Neue'", fontSize: 18, letterSpacing: "0.08em", color: "#EEEEF2", lineHeight: 1 }}>ROUGE</div>
-          <div style={{ fontSize: 10, color: "#5A5A6A", marginTop: 1, letterSpacing: "0.04em" }}>AI Prompt Engineer</div>
+          <div style={{ fontFamily: "'Bebas Neue'", fontSize: 18, letterSpacing: "0.08em", color: "#EEEEF2", lineHeight: 1 }}>PROMPT ROUGE</div>
+          {!isMobile && <div style={{ fontSize: 10, color: "#8A8A9A", marginTop: 1, letterSpacing: "0.04em" }}>AI Prompt Engineer</div>}
         </div>
       </div>
 
       {/* Nav */}
-      <div style={{ display: "flex", gap: 0, marginLeft: isMobile ? "auto" : 32, borderBottom: "none" }}>
+      <div style={{ display: "flex", gap: 0, marginLeft: isMobile ? 8 : 32, borderBottom: "none" }}>
         {[
-          { label: isMobile ? "BUILD" : "Template", v: "template" },
-          { label: isMobile ? "RESULT" : "Assembled", v: "assembled" },
-          { label: isMobile ? "MOVES" : "Power Moves", v: "power" },
+          { label: isMobile ? "Build" : "Template", v: "template" },
+          { label: isMobile ? "Result" : "Assembled", v: "assembled" },
+          { label: isMobile ? "Moves" : "Power Moves", v: "power" },
         ].map(({ label, v }) => {
           const active = view === v;
           const isPower = v === "power";
           return (
             <button key={v} className={`btn${active ? " nav-active" : ""}`} onClick={() => handleNavClick(v)}
-              style={{ padding: isMobile ? "6px 10px" : "0 16px", height: isMobile ? "auto" : 56, background: "transparent", border: "none", fontSize: 13, fontWeight: active ? 600 : 400, color: active ? "#EEEEF2" : isPower ? "#B8F060" : "#38383E", cursor: "pointer", position: "relative", letterSpacing: "0.01em", transition: "color 0.15s" }}>
+              style={{ padding: isMobile ? "5px 7px" : "0 16px", height: isMobile ? "auto" : 56, background: "transparent", border: "none", fontSize: isMobile ? 11 : 13, fontWeight: active ? 600 : 400, color: active ? "#EEEEF2" : isPower ? "#B8F060" : "#8A8A9A", cursor: "pointer", position: "relative", letterSpacing: "0.01em", transition: "color 0.15s" }}>
               {label}
             </button>
           );
@@ -469,15 +469,15 @@ export default function PromptGuide() {
       {/* Right side */}
       <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
         {!isMobile && view === "template" && (
-          <div style={{ fontSize: 11, color: "#5A5A6A", fontFamily: "'DM Mono', monospace" }}>
+          <div style={{ fontSize: 11, color: "#8A8A9A", fontFamily: "'DM Mono', monospace" }}>
             <span style={{ padding: "2px 6px", background: "#141418", border: "1px solid #1E1E26", borderRadius: 3 }}>⌘↵</span>
             {" "}next
           </div>
         )}
         {filledCount > 0 && (
-          <button className="btn" onClick={clearAll} style={{ fontSize: 11, color: "#38383E", background: "transparent", border: "1px solid #1E1E26", borderRadius: 6, padding: "4px 10px", transition: "all 0.15s" }}
-            onMouseEnter={e => { e.currentTarget.style.color = "#5A5A6A"; e.currentTarget.style.borderColor = "#38383E"; }}
-            onMouseLeave={e => { e.currentTarget.style.color = "#38383E"; e.currentTarget.style.borderColor = "#1E1E26"; }}>
+          <button className="btn" onClick={clearAll} style={{ fontSize: 11, color: "#7A7A80", background: "transparent", border: "1px solid #1E1E26", borderRadius: 6, padding: "4px 10px", transition: "all 0.15s" }}
+            onMouseEnter={e => { e.currentTarget.style.color = "#8A8A9A"; e.currentTarget.style.borderColor = "#7A7A80"; }}
+            onMouseLeave={e => { e.currentTarget.style.color = "#7A7A80"; e.currentTarget.style.borderColor = "#1E1E26"; }}>
             ↺ Clear
           </button>
         )}
@@ -506,7 +506,7 @@ export default function PromptGuide() {
                 const done = s.field && fields[s.field]?.trim();
                 const active = step === i;
                 return (
-                  <button key={i} className="btn" onClick={() => { setStepKey(k => k + 1); setStep(i); }} style={{ padding: "5px 12px", borderRadius: 20, flexShrink: 0, background: active ? s.color : done ? s.color + "20" : "#111", border: `1px solid ${active ? s.color : done ? s.color + "50" : "#222"}`, color: active ? "#0A0A0A" : done ? s.color : "#38383E", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em" }}>
+                  <button key={i} className="btn" onClick={() => { setStepKey(k => k + 1); setStep(i); }} style={{ padding: "5px 12px", borderRadius: 20, flexShrink: 0, background: active ? s.color : done ? s.color + "20" : "#111", border: `1px solid ${active ? s.color : done ? s.color + "50" : "#222"}`, color: active ? "#0A0A0A" : done ? s.color : "#8A8A9A", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em" }}>
                     {done && !active ? "✓ " : ""}{s.label}
                   </button>
                 );
@@ -521,12 +521,12 @@ export default function PromptGuide() {
                   <button key={i} className="btn sidebar-item" onClick={() => { setStepKey(k => k + 1); setStep(i); }}
                     style={{ padding: "11px 20px", textAlign: "left", borderLeft: `2px solid ${active ? s.color : "transparent"}`, background: active ? "#0D0D0D" : "transparent", display: "flex", alignItems: "center", gap: 12, border: "none", borderLeft: `2px solid ${active ? s.color : "transparent"}`, cursor: "pointer" }}>
                     {/* Step indicator */}
-                    <div style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, background: active ? s.color : done ? s.color + "22" : "#141414", border: done && !active ? `1px solid ${s.color}55` : "none", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: active ? "#0A0A0A" : done ? s.color : "#38383E", transition: "all 0.2s", fontFamily: "'DM Mono', monospace" }}>
+                    <div style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, background: active ? s.color : done ? s.color + "22" : "#141414", border: done && !active ? `1px solid ${s.color}55` : "none", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: active ? "#0A0A0A" : done ? s.color : "#7A7A80", transition: "all 0.2s", fontFamily: "'DM Mono', monospace" }}>
                       {done && !active ? "✓" : s.id}
                     </div>
                     <div>
-                      <div style={{ fontSize: 10, letterSpacing: "0.12em", color: active ? s.color : done ? s.color + "99" : "#38383E", fontWeight: 700, fontFamily: "'DM Mono', monospace", marginBottom: 1 }}>{s.label}</div>
-                      <div style={{ fontSize: 12, color: active ? "#CCC" : done ? "#5A5A6A" : "#38383E", fontWeight: active ? 500 : 400 }}>{s.title}</div>
+                      <div style={{ fontSize: 10, letterSpacing: "0.12em", color: active ? s.color : done ? s.color + "99" : "#7A7A80", fontWeight: 700, fontFamily: "'DM Mono', monospace", marginBottom: 1 }}>{s.label}</div>
+                      <div style={{ fontSize: 12, color: active ? "#EEEEF2" : done ? "#9898A8" : "#8A8A9A", fontWeight: active ? 500 : 400 }}>{s.title}</div>
                     </div>
                   </button>
                 );
@@ -534,7 +534,7 @@ export default function PromptGuide() {
 
               <div style={{ margin: "20px 20px 12px", height: 1, background: "#141418" }} />
               <div style={{ padding: "0 20px" }}>
-                <div style={{ fontSize: 11, color: "#5A5A6A", lineHeight: 1.6, marginBottom: 8 }}>{filledCount} of 4 fields filled</div>
+                <div style={{ fontSize: 11, color: "#8A8A9A", lineHeight: 1.6, marginBottom: 8 }}>{filledCount} of 4 fields filled</div>
                 <div style={{ height: 2, background: "#141418", borderRadius: 1, overflow: "hidden", marginBottom: 12 }}>
                   <div style={{ height: "100%", width: `${(filledCount / 4) * 100}%`, background: "#B8F060", borderRadius: 1, transition: "width 0.4s cubic-bezier(0.22,1,0.36,1)" }} />
                 </div>
@@ -547,7 +547,7 @@ export default function PromptGuide() {
             {/* Step dots */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
               <StepDots fields={fields} step={step} />
-              <div style={{ fontSize: 11, color: "#5A5A6A", fontFamily: "'DM Mono', monospace" }}>
+              <div style={{ fontSize: 11, color: "#8A8A9A", fontFamily: "'DM Mono', monospace" }}>
                 {step + 1} / 5
               </div>
             </div>
@@ -587,9 +587,9 @@ export default function PromptGuide() {
 
                   {/* Persistent example */}
                   {S.persistentExample && (
-                    <div style={{ marginTop: 10, fontSize: 12, color: "#5A5A6A" }}>
-                      <span style={{ color: "#38383E" }}>e.g. </span>
-                      <span style={{ color: "#5A5A6A", fontStyle: "italic" }}>{S.persistentExample}</span>
+                    <div style={{ marginTop: 10, fontSize: 12, color: "#8A8A9A" }}>
+                      <span style={{ color: "#7A7A80" }}>e.g. </span>
+                      <span style={{ color: "#8A8A9A", fontStyle: "italic" }}>{S.persistentExample}</span>
                     </div>
                   )}
                 </div>
@@ -606,7 +606,7 @@ export default function PromptGuide() {
               {/* Examples */}
               {S.examples.length > 0 && (
                 <div style={{ marginTop: 20 }}>
-                  <div style={{ fontSize: 11, color: "#5A5A6A", marginBottom: 8 }}>Click an example to use it ↓</div>
+                  <div style={{ fontSize: 11, color: "#8A8A9A", marginBottom: 8 }}>Click an example to use it ↓</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                     {S.examples.map((ex, i) => (
                       <div key={i} className="ex-chip"
@@ -631,7 +631,7 @@ export default function PromptGuide() {
               {/* Nav buttons */}
               <div style={{ display: "flex", gap: 10, marginTop: 24, alignItems: "center" }}>
                 {step > 0 && (
-                  <button className="btn" onClick={goBack} style={{ padding: "10px 18px", background: "#0E0E12", border: "1px solid #1E1E26", borderRadius: 8, color: "#5A5A6A", fontSize: 13, fontWeight: 500 }}>
+                  <button className="btn" onClick={goBack} style={{ padding: "10px 18px", background: "#0E0E12", border: "1px solid #1E1E26", borderRadius: 8, color: "#8A8A9A", fontSize: 13, fontWeight: 500 }}>
                     ← Back
                   </button>
                 )}
@@ -639,7 +639,7 @@ export default function PromptGuide() {
                   style={{ padding: step === 4 ? "13px 30px" : "10px 22px", background: S.color, border: "none", borderRadius: 8, color: "#0A0A0A", fontSize: step === 4 ? 14 : 13, fontWeight: 700, letterSpacing: "0.02em", boxShadow: step === 4 ? `0 0 28px ${S.color}35` : "none", transition: "all 0.25s" }}>
                   {step < 4 ? "Next →" : "Build My Prompt →"}
                 </button>
-                {step === 4 && <div style={{ fontSize: 12, color: "#5A5A6A" }}>You're ready ✓</div>}
+                {step === 4 && <div style={{ fontSize: 12, color: "#8A8A9A" }}>You're ready ✓</div>}
               </div>
 
               {/* Step 5 — Power Moves nudge */}
@@ -648,7 +648,7 @@ export default function PromptGuide() {
                   <div style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>⚡</div>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: "#EEEEF2", marginBottom: 4 }}>Before you copy — check Power Moves</div>
-                    <div style={{ fontSize: 12, color: "#5A5A6A", lineHeight: 1.6, marginBottom: 10 }}>
+                    <div style={{ fontSize: 12, color: "#8A8A9A", lineHeight: 1.6, marginBottom: 10 }}>
                       Sparring partner, devil's advocate, reusable skills — prompts that go beyond the template.
                     </div>
                     <button className="btn" onClick={() => setView("power")}
@@ -659,11 +659,11 @@ export default function PromptGuide() {
                 </div>
               )}
 
-              {/* Mobile smart nudge */}
+              {/* Mobile smart nudge — fixed to bottom of viewport */}
               {isMobile && S.field && charCount > 12 && step < 4 && (
-                <div style={{ marginTop: 12, padding: "10px 14px", background: "#0E0E12", border: `1px solid ${S.color}28`, borderRadius: 8, fontSize: 12, color: S.color, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span>Looks good</span>
-                  <button className="btn" onClick={goNext} style={{ background: S.color, border: "none", borderRadius: 5, padding: "5px 14px", color: "#0A0A0A", fontSize: 11, fontWeight: 700 }}>Next →</button>
+                <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 200, padding: "12px 16px", background: "#0E0E12", borderTop: `1px solid ${S.color}40`, display: "flex", justifyContent: "space-between", alignItems: "center", backdropFilter: "blur(8px)" }}>
+                  <span style={{ fontSize: 12, color: S.color }}>Looks good ✓</span>
+                  <button className="btn" onClick={goNext} style={{ background: S.color, border: "none", borderRadius: 6, padding: "8px 20px", color: "#0A0A0A", fontSize: 12, fontWeight: 700 }}>Next →</button>
                 </div>
               )}
             </div>
@@ -672,7 +672,7 @@ export default function PromptGuide() {
           {/* ── Right preview panel ── */}
           {!isMobile && (
             <div style={{ borderLeft: "1px solid #1E1E26", padding: "24px 20px", display: "flex", flexDirection: "column" }}>
-              <div style={{ fontSize: 10, letterSpacing: "0.16em", color: "#5A5A6A", marginBottom: 12, fontFamily: "'DM Mono', monospace", textTransform: "uppercase" }}>Live Preview</div>
+              <div style={{ fontSize: 10, letterSpacing: "0.16em", color: "#8A8A9A", marginBottom: 12, fontFamily: "'DM Mono', monospace", textTransform: "uppercase" }}>Live Preview</div>
               <div style={{ flex: 1, background: "#070709", border: "1px solid #1E1E26", borderRadius: 10, padding: "14px 16px", fontSize: 12, lineHeight: 2, overflowY: "auto", whiteSpace: "pre-wrap", wordBreak: "break-word", fontFamily: "'DM Mono', monospace" }}>
                 {assembled.split("\n").map((line, i) => {
                   const c = lineColor(line) || "#38383E";
@@ -685,12 +685,12 @@ export default function PromptGuide() {
                   );
                 })}
               </div>
-              <button className="btn" onClick={doCopy} style={{ marginTop: 10, padding: 11, background: copied ? "#0A1A0F" : "#141418", border: `1px solid ${copied ? "#1E4A2A" : "#1E1E26"}`, borderRadius: 8, color: copied ? "#4ABA74" : "#38383E", fontSize: 12, fontWeight: 600, textAlign: "center", transition: "all 0.2s" }}>
+              <button className="btn" onClick={doCopy} style={{ marginTop: 10, padding: 11, background: copied ? "#0A1A0F" : "#141418", border: `1px solid ${copied ? "#1E4A2A" : "#1E1E26"}`, borderRadius: 8, color: copied ? "#4ABA74" : "#8A8A9A", fontSize: 12, fontWeight: 600, textAlign: "center", transition: "all 0.2s" }}>
                 {copied ? "✓  Copied!" : "Copy Full Prompt"}
               </button>
-              <button className="btn" onClick={() => setView("assembled")} style={{ marginTop: 7, padding: 9, background: "transparent", border: "1px solid #1E1E26", borderRadius: 8, color: "#38383E", fontSize: 11, textAlign: "center", letterSpacing: "0.04em", transition: "all 0.15s" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "#38383E"; e.currentTarget.style.color = "#AAA"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "#1A1A1A"; e.currentTarget.style.color = "#38383E"; }}>
+              <button className="btn" onClick={() => setView("assembled")} style={{ marginTop: 7, padding: 9, background: "transparent", border: "1px solid #1E1E26", borderRadius: 8, color: "#7A7A80", fontSize: 11, textAlign: "center", letterSpacing: "0.04em", transition: "all 0.15s" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "#7A7A80"; e.currentTarget.style.color = "#EEEEF2"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "#1E1E26"; e.currentTarget.style.color = "#7A7A80"; }}>
                 Expand Full View →
               </button>
             </div>
@@ -736,15 +736,15 @@ export default function PromptGuide() {
           {/* Header row */}
           <div className="fade-up fade-up-1" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24, gap: 12 }}>
             <div>
-              <div style={{ fontSize: 10, letterSpacing: "0.16em", color: "#38383E", marginBottom: 4, textTransform: "uppercase", fontFamily: "'DM Mono', monospace" }}>Ready to use</div>
+              <div style={{ fontSize: 10, letterSpacing: "0.16em", color: "#7A7A80", marginBottom: 4, textTransform: "uppercase", fontFamily: "'DM Mono', monospace" }}>Ready to use</div>
               <h2 style={{ fontSize: isMobile ? 24 : 28, fontWeight: 600, color: "#EEEEF2", letterSpacing: "-0.02em" }}>Your Assembled Prompt</h2>
-              <div style={{ fontSize: 12, color: "#5A5A6A", marginTop: 5 }}>
+              <div style={{ fontSize: 12, color: "#8A8A9A", marginTop: 5 }}>
                 Want to go deeper?{" "}
                 <span onClick={() => setView("power")} style={{ color: "#B8F060", cursor: "pointer" }}>Try a Power Move →</span>
               </div>
             </div>
             <div style={{ display: "flex", gap: 7, flexShrink: 0 }}>
-              <button className="btn" onClick={goBack} style={{ padding: "9px 16px", background: "#0E0E12", border: "1px solid #1E1E26", borderRadius: 8, color: "#5A5A6A", fontSize: 12, fontWeight: 500 }}>← Edit</button>
+              <button className="btn" onClick={goBack} style={{ padding: "9px 16px", background: "#0E0E12", border: "1px solid #1E1E26", borderRadius: 8, color: "#8A8A9A", fontSize: 12, fontWeight: 500 }}>← Edit</button>
               <button className="btn" onClick={doCopy} style={{ padding: "9px 22px", background: copied ? "#0A1A0F" : "#B8F060", border: "none", borderRadius: 8, color: copied ? "#4ABA74" : "#0A0A0A", fontSize: 12, fontWeight: 700, letterSpacing: "0.02em", transition: "all 0.2s", boxShadow: copied ? "none" : "0 0 20px #B8F06028" }}>
                 {copied ? "✓  Copied!" : "Copy Prompt"}
               </button>
@@ -753,7 +753,7 @@ export default function PromptGuide() {
 
           {/* Editable section cards */}
           <div className="fade-up fade-up-2">
-            <div style={{ fontSize: 11, color: "#5A5A6A", marginBottom: 10 }}>Click any section to edit inline ↓</div>
+            <div style={{ fontSize: 11, color: "#8A8A9A", marginBottom: 10 }}>Click any section to edit inline ↓</div>
             {sections.map(({ label, color, field, prefix, value }) => (
               <EditableCard key={label} label={label} color={color} field={field} prefix={prefix} value={value}
                 onChange={field ? v => updateField(field, v) : null} />
@@ -762,9 +762,9 @@ export default function PromptGuide() {
 
           {/* Raw textarea */}
           <div className="fade-up fade-up-3" style={{ marginTop: 24 }}>
-            <div style={{ fontSize: 11, color: "#38383E", marginBottom: 7, letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'DM Mono', monospace" }}>Raw — click to select all</div>
+            <div style={{ fontSize: 11, color: "#7A7A80", marginBottom: 7, letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'DM Mono', monospace" }}>Raw — click to select all</div>
             <textarea readOnly value={assembled} rows={10} onClick={e => e.target.select()}
-              style={{ width: "100%", background: "#070709", border: "1px solid #1E1E26", borderRadius: 10, padding: "14px 16px", fontSize: 12, color: "#5A5A6A", lineHeight: 1.8, outline: "none", cursor: "text", resize: "vertical", fontFamily: "'DM Mono', monospace" }} />
+              style={{ width: "100%", background: "#070709", border: "1px solid #1E1E26", borderRadius: 10, padding: "14px 16px", fontSize: 12, color: "#8A8A9A", lineHeight: 1.8, outline: "none", cursor: "text", resize: "vertical", fontFamily: "'DM Mono', monospace" }} />
           </div>
         </div>
       </div>
@@ -780,7 +780,7 @@ export default function PromptGuide() {
       <Header />
       <div style={{ padding: isMobile ? "20px 16px" : "36px 32px", maxWidth: 880, margin: "0 auto" }}>
         <div className="fade-up fade-up-1">
-          <div style={{ fontSize: 10, letterSpacing: "0.16em", color: "#38383E", textTransform: "uppercase", fontFamily: "'DM Mono', monospace", marginBottom: 5 }}>Beyond the Template</div>
+          <div style={{ fontSize: 10, letterSpacing: "0.16em", color: "#7A7A80", textTransform: "uppercase", fontFamily: "'DM Mono', monospace", marginBottom: 5 }}>Beyond the Template</div>
           <h2 style={{ fontSize: 28, fontWeight: 600, color: "#EEEEF2", marginBottom: 6, letterSpacing: "-0.02em" }}>Power Moves</h2>
           <p style={{ fontSize: 13, color: "#9898A8", marginBottom: 28, lineHeight: 1.7, maxWidth: 560 }}>Once you've mastered the 5-part template, these patterns unlock the next tier — using AI as a sparring partner, tutor, and persistent collaborator.</p>
         </div>
