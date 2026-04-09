@@ -1,54 +1,85 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+
+// ── Data ──────────────────────────────────────────────────────────────────────
 
 const TEMPLATE_STEPS = [
   {
-    id: 1, label: "ROLE", color: "#C8F04E",
+    id: 1, label: "ROLE", color: "#B8F060",
     title: "Define the Expert",
     instruction: "You are a top 0.1% expert in [FIELD]",
-    description: "Set Claude's persona before anything else. The more specific the field, the better the output. This anchors the entire response quality.",
-    placeholder: "e.g. UX design for financial apps, B2B SaaS copywriting, growth marketing for startups",
-    examples: ["UX design for financial apps", "B2B SaaS copywriting", "growth marketing for startups"],
-    tip: "Be domain-specific, not generic. 'marketing' is weak. 'email marketing for SaaS onboarding sequences' is strong.",
+    hint: "The more specific the financial domain, the better the output.",
+    placeholder: "e.g. UX strategy for retail mobile banking, design systems for financial platforms",
+    persistentExample: "UX strategy for retail mobile banking apps",
+    examples: [
+      "UX strategy for retail mobile banking apps",
+      "Design systems for omnichannel financial platforms",
+      "User research and journey mapping for fintech onboarding flows",
+      "Conversational UI and AI-powered banking experience design",
+      "Enterprise UX for core banking and back-office transformation",
+    ],
+    tip: "Match the role to your deliverable. A UX audit needs a different expert than a stakeholder narrative or RFP response.",
     field: "role"
   },
   {
-    id: 2, label: "TASK", color: "#4ECAF0",
+    id: 2, label: "TASK", color: "#5DD8F5",
     title: "State the Task Clearly",
     instruction: "I want you to [SPECIFIC ACTION] and output [FORMAT]",
-    description: "One clear action. State what to do AND what format you expect back. Don't let Claude guess.",
-    placeholder: "e.g. research X and output a comparison table / write a 3-paragraph summary / create 5 options with pros and cons",
-    examples: ["Research the top 5 email marketing tools and output a comparison table", "Rewrite this landing page headline in 5 different tones", "Audit this UI flow and output a prioritized list of issues"],
-    tip: "Name the output format explicitly: table, bullet list, numbered steps, JSON, paragraph, etc.",
+    hint: "One action + one output format. Don't let the AI guess.",
+    placeholder: "e.g. synthesize user interview insights and output a prioritized insight cluster",
+    persistentExample: "Audit the onboarding flow and output a prioritized list of UX issues",
+    examples: [
+      "Synthesize these user interview notes and output a prioritized insight cluster with themes and supporting quotes",
+      "Write a strategic project rationale for a private banking app redesign and output a 3-paragraph executive narrative",
+      "Conduct a UX audit of this mobile banking flow and output a prioritized issue list with severity ratings",
+      "Draft an RFP response for a neobank redesign project and output a structured proposal with sections: approach, team, timeline",
+      "Create a JTBD-based user persona for a corporate banking platform and output a structured persona card",
+    ],
+    tip: "Name the output format explicitly: insight cluster, executive narrative, issue list, persona card, journey map, etc.",
     field: "task"
   },
   {
-    id: 3, label: "CONTEXT", color: "#F0A64E",
+    id: 3, label: "CONTEXT", color: "#FFAD3D",
     title: "Provide Your Context",
     instruction: "Here is my context: [EVERYTHING RELEVANT]",
-    description: "Dump everything relevant. Background, past attempts, what worked, what didn't, your goals, your audience. More context = better output.",
-    placeholder: "e.g. I've tried X with Y results. My budget is Z. My audience is... My current approach is...",
-    examples: ["I've run 3 A/B tests on this CTA. Version A got 2.1% CTR, Version B got 1.4%", "My client is a Latvian fintech startup targeting SMB owners aged 35–55", "I'm redesigning a banking app used by 500k monthly users, current NPS is 34"],
-    tip: "Paste in actual data, real numbers, and past results. Don't summarize — give the raw context.",
+    hint: "Dump everything — client type, project stage, what's done, who reads the output.",
+    placeholder: "e.g. The client is a mid-size retail bank in the Baltics. We're in discovery phase...",
+    persistentExample: "Client is a retail bank, 2M users, redesigning their mobile app. Stakeholder is the CDO.",
+    examples: [
+      "Client is a Baltic retail bank with 2M users. We are in discovery phase. The presentation audience is the CDO and Head of Digital Product.",
+      "This is a neobank targeting millennials aged 25–38 in the EU. The existing onboarding flow has a 61% drop-off rate at step 3.",
+      "We are designing a wealth management platform for HNWI clients. The current system is a 10-year-old desktop legacy tool being migrated to web and mobile.",
+      "The client is a corporate banking division of a top-10 European bank. Primary users are treasury managers and CFOs of mid-size enterprises.",
+      "We are pitching a full UX redesign to the CEO of a crypto wallet startup. They have 80k active users and are preparing a Series B round.",
+    ],
+    tip: "Include client type, user segment, project phase, and who will act on the output. Real numbers beat vague descriptions.",
     field: "context"
   },
   {
-    id: 4, label: "CONSTRAINTS", color: "#F04E8A",
+    id: 4, label: "CONSTRAINTS", color: "#F0527A",
     title: "Set Your Constraints",
     instruction: "Constraints: [LIST YOUR LIMITS]",
-    description: "Tell Claude what's off the table. Budget, time, platform, format, tone, audience, what you refuse to do. Constraints shape entirely different outputs.",
-    placeholder: "e.g. no face-on-camera, budget under €500, must work in Figma, tone must be professional not casual",
-    examples: ["Must be implementable in Wix without custom code", "All copy must be bilingual (Latvian + English)", "No stock photos — illustration only", "Response must fit in a single screen on mobile"],
-    tip: "Negative constraints ('no X') are just as powerful as positive ones. Be explicit about both.",
+    hint: "Tell the AI what's off the table — tone, format, compliance, audience limitations.",
+    placeholder: "e.g. tone must be strategic not operational, no jargon the C-suite won't understand",
+    persistentExample: "Tone must be strategic, not operational. No UX jargon. Max 300 words.",
+    examples: [
+      "Tone must be strategic and confident — avoid operational UX jargon. The reader is a C-suite executive, not a designer.",
+      "Output must comply with GDPR framing — do not suggest data collection approaches that require explicit new consent flows.",
+      "The deliverable must fit within a 10-minute stakeholder presentation. No more than 5 key points.",
+      "Design recommendations must be implementable within the client's existing design system — no new components.",
+      "This is an internal UXDA document — tone can be direct and candid. No need to soften critique of the client's current UX.",
+    ],
+    tip: "Audience constraints are the most powerful. 'The reader is a CDO, not a designer' changes everything about tone and framing.",
     field: "constraints"
   },
   {
-    id: 5, label: "CLARIFY", color: "#A44EF0",
+    id: 5, label: "CLARIFY", color: "#9B6EEA",
     title: "Ask for Clarifying Questions",
     instruction: "Ask me clarifying questions one at a time until you are 95% confident you can complete this task successfully.",
-    description: "This single line changes everything. Claude will surface your blind spots before doing the work — not after. You'll also get sharper on what you actually want.",
+    hint: "This one line surfaces blind spots before the AI starts — not after.",
     placeholder: null,
+    persistentExample: null,
     examples: [],
-    tip: "Use 'one at a time' — it forces a deeper dialogue rather than a list of questions you'll skim and partially answer.",
+    tip: "'One at a time' forces deeper dialogue rather than a list you'll skim and half-answer.",
     field: null
   }
 ];
@@ -60,6 +91,10 @@ const POWER_MOVES = [
   { icon: "📋", title: "Reusable Skill", prompt: "Based on our conversation, write a reusable SKILL.md file I can use to prompt you with this exact context in future sessions. Include role, key context, constraints, and output format.", use: "After any session you'd want to repeat." },
   { icon: "🧠", title: "Memory Prompt", prompt: "Summarize everything important you've learned about me, my work, my goals, and my style from this conversation. Format it as a CLAUDE.md memory file.", use: "At the end of productive sessions to preserve context." },
 ];
+
+const STORAGE_KEY = "uxda_prompt_v2";
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
 
 function copyText(text, onDone) {
   const ta = document.createElement("textarea");
@@ -73,42 +108,266 @@ function copyText(text, onDone) {
   try { ok = document.execCommand("copy"); } catch (_) {}
   document.body.removeChild(ta);
   if (ok) { onDone(); return; }
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(onDone).catch(() => {});
-  }
+  if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(onDone).catch(() => {});
 }
 
-function PowerCard({ pm }) {
+function loadFields() {
+  try { const r = localStorage.getItem(STORAGE_KEY); if (r) return JSON.parse(r); } catch (_) {}
+  return { role: "", task: "", context: "", constraints: "" };
+}
+function saveFields(f) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(f)); } catch (_) {}
+}
+
+// ── Global styles ─────────────────────────────────────────────────────────────
+
+const GLOBAL_CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Bebas+Neue&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body, #root { height: 100%; }
+
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2E2E3A; border-radius: 2px; }
+
+  body { font-family: 'DM Sans', sans-serif; background: #080808; color: #D8D8D8; }
+
+  button, input, textarea { font-family: 'DM Sans', sans-serif; }
+  .mono { font-family: 'DM Mono', monospace; }
+
+  /* Step transition */
+  @keyframes stepIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .step-in { animation: stepIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+  /* Page load */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .fade-up-1 { animation-delay: 0.05s; }
+  .fade-up-2 { animation-delay: 0.12s; }
+  .fade-up-3 { animation-delay: 0.19s; }
+
+  /* Preview flash */
+  @keyframes lineFlash {
+    0%   { background: rgba(255,255,255,0.07); }
+    100% { background: transparent; }
+  }
+  .line-flash { animation: lineFlash 0.55s ease-out; border-radius: 3px; }
+
+  /* Delight pulse on completion */
+  @keyframes completePulse {
+    0%   { box-shadow: 0 0 0 0 rgba(184,240,96,0.4); }
+    70%  { box-shadow: 0 0 0 10px rgba(184,240,96,0); }
+    100% { box-shadow: 0 0 0 0 rgba(184,240,96,0); }
+  }
+  .complete-pulse { animation: completePulse 0.6s ease-out; }
+
+  /* Hover lift */
+  .lift { transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease; }
+  .lift:hover { transform: translateY(-2px); }
+
+  /* Button base */
+  .btn { cursor: pointer; border: none; outline: none; transition: opacity 0.15s, transform 0.1s; }
+  .btn:hover { opacity: 0.88; }
+  .btn:active { transform: scale(0.97); }
+
+  /* Nav active indicator */
+  .nav-active { position: relative; }
+  .nav-active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 50%;
+    transform: translateX(-50%);
+    width: 16px; height: 2px;
+    background: #B8F060;
+    border-radius: 1px;
+  }
+
+  /* Sidebar item hover */
+  .sidebar-item { transition: background 0.15s; }
+  .sidebar-item:hover { background: #0F0F0F !important; }
+
+  /* Example chip */
+  .ex-chip { transition: border-color 0.15s, color 0.15s, background 0.15s; }
+
+  /* Textarea focus glow */
+  textarea:focus { outline: none; }
+
+  /* Quality indicator transition */
+  .quality-bar { transition: width 0.4s cubic-bezier(0.22,1,0.36,1), background 0.4s; }
+`;
+
+// ── Progress dots ─────────────────────────────────────────────────────────────
+
+function StepDots({ fields, step }) {
+  return (
+    <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+      {TEMPLATE_STEPS.map((s, i) => {
+        const filled = s.field ? !!fields[s.field]?.trim() : false;
+        const active = step === i;
+        return (
+          <div key={i} style={{
+            width: active ? 20 : filled ? 8 : 6,
+            height: 6,
+            borderRadius: 3,
+            background: active ? s.color : filled ? s.color : "#2A2A2A",
+            opacity: active ? 1 : filled ? 0.7 : 1,
+            transition: "all 0.3s cubic-bezier(0.22,1,0.36,1)",
+            flexShrink: 0
+          }} />
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Quality bar ───────────────────────────────────────────────────────────────
+
+function QualityBar({ value, threshold, color }) {
+  const pct = Math.min(100, Math.round((value / threshold) * 100));
+  const met = pct >= 100;
+  return (
+    <div style={{ marginTop: 8 }}>
+      <div style={{ height: 2, background: "#1E1E26", borderRadius: 1, overflow: "hidden" }}>
+        <div className="quality-bar" style={{ height: "100%", width: `${pct}%`, background: met ? color : "#38383E", borderRadius: 1 }} />
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
+        <span style={{ fontSize: 11, color: met ? color : "#5A5A6A", transition: "color 0.3s", fontFamily: "'DM Mono', monospace" }}>
+          {met ? "✓ Good detail level" : `${threshold - value} chars to go`}
+        </span>
+        <span style={{ fontSize: 11, color: "#38383E", fontFamily: "'DM Mono', monospace" }}>{value}c</span>
+      </div>
+    </div>
+  );
+}
+
+// ── Power card ────────────────────────────────────────────────────────────────
+
+function PowerCard({ pm, delay = 0 }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div style={{ padding: "20px", background: "#0E0E0E", border: "1px solid #1C1C1C", borderRadius: "6px", display: "flex", flexDirection: "column", gap: "12px", transition: "border-color 0.2s" }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = "#333"}
-      onMouseLeave={e => e.currentTarget.style.borderColor = "#1C1C1C"}>
-      <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
-        <span style={{ fontSize: "22px" }}>{pm.icon}</span>
+    <div className="lift fade-up" style={{ animationDelay: `${delay}s`, padding: "22px", background: "#0E0E12", border: "1px solid #1E1E26", borderRadius: "12px", display: "flex", flexDirection: "column", gap: "14px" }}>
+      <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+        <div style={{ fontSize: 22, lineHeight: 1 }}>{pm.icon}</div>
         <div>
-          <div style={{ fontSize: "13px", fontWeight: "600", color: "#E8E8E8", marginBottom: "2px" }}>{pm.title}</div>
-          <div style={{ fontSize: "10px", color: "#555", lineHeight: "1.5" }}>{pm.use}</div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: "#EEEEF2", marginBottom: 3 }}>{pm.title}</div>
+          <div style={{ fontSize: 12, color: "#5A5A6A", lineHeight: 1.5 }}>{pm.use}</div>
         </div>
       </div>
-      <div style={{ padding: "10px 12px", background: "#131313", borderRadius: "4px", fontSize: "11px", color: "#C8F04E", lineHeight: "1.7", fontStyle: "italic", flex: 1 }}>
+      <div style={{ padding: "12px 14px", background: "#0E0E12", borderRadius: "8px", fontSize: 13, color: "#B8F060", lineHeight: 1.7, fontStyle: "italic", flex: 1, fontFamily: "'DM Mono', monospace" }}>
         "{pm.prompt}"
       </div>
-      <button onClick={() => copyText(pm.prompt, () => { setCopied(true); setTimeout(() => setCopied(false), 2000); })}
-        style={{ padding: "7px 12px", background: copied ? "#0D1F0D" : "#1A1A1A", border: `1px solid ${copied ? "#2A4A2A" : "#272727"}`, borderRadius: "3px", color: copied ? "#5A9A5A" : "#444", fontSize: "10px", letterSpacing: "0.08em", textAlign: "center", cursor: "pointer", fontFamily: "'IBM Plex Mono', monospace", transition: "all 0.15s" }}>
-        {copied ? "✓ Copied" : "Copy prompt"}
+      <button className="btn" onClick={() => copyText(pm.prompt, () => { setCopied(true); setTimeout(() => setCopied(false), 2000); })}
+        style={{ padding: "9px 14px", background: copied ? "#0A1A0F" : "#161616", border: `1px solid ${copied ? "#1E4A2A" : "#262626"}`, borderRadius: "7px", color: copied ? "#4ABA74" : "#5A5A6A", fontSize: 12, letterSpacing: "0.04em", textAlign: "center", fontWeight: 500, transition: "all 0.15s" }}>
+        {copied ? "✓  Copied" : "Copy prompt"}
       </button>
     </div>
   );
 }
 
+// ── Editable assembled card ───────────────────────────────────────────────────
+
+function EditableCard({ label, color, field, prefix, value, onChange }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const taRef = useRef(null);
+
+  useEffect(() => { if (!editing) setDraft(value); }, [value, editing]);
+  useEffect(() => {
+    if (editing && taRef.current) {
+      taRef.current.focus();
+      taRef.current.setSelectionRange(taRef.current.value.length, taRef.current.value.length);
+    }
+  }, [editing]);
+
+  const save = () => { setEditing(false); if (onChange) onChange(draft); };
+  const isEditable = !!onChange;
+
+  // Neutral card — color is used ONLY for the label text, not backgrounds or borders
+  return (
+    <div style={{ marginBottom: 6, borderRadius: 10, overflow: "hidden", border: `1px solid ${editing ? "#38383E" : "#181818"}`, transition: "border-color 0.2s", cursor: isEditable && !editing ? "pointer" : "default" }}
+      onClick={() => { if (isEditable && !editing) setEditing(true); }}>
+      {/* Header: neutral bg, only the label tag carries color */}
+      <div style={{ padding: "7px 14px", background: "#0E0E12", borderBottom: "1px solid #1E1E26", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 3, height: 12, borderRadius: 2, background: color, flexShrink: 0 }} />
+          <span style={{ fontSize: 10, letterSpacing: "0.16em", color: color, fontWeight: 700, fontFamily: "'DM Mono', monospace" }}>{label}</span>
+        </div>
+        {isEditable && (
+          <span style={{ fontSize: 11, color: editing ? "#9898A8" : "#38383E", transition: "color 0.15s" }}>
+            {editing ? "⌘↵ save" : "✎ edit"}
+          </span>
+        )}
+      </div>
+      <div style={{ background: "#070709" }}>
+        {editing ? (
+          <div>
+            <textarea ref={taRef} value={draft} rows={3}
+              onChange={e => setDraft(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) save(); if (e.key === "Escape") { setDraft(value); setEditing(false); } }}
+              style={{ width: "100%", background: "#0E0E12", border: "none", outline: "none", padding: "12px 14px", fontSize: 13, color: "#EEEEF2", lineHeight: 1.7, resize: "vertical", fontFamily: "'DM Sans', sans-serif" }} />
+            <div style={{ display: "flex", gap: 6, padding: "8px 12px 10px" }}>
+              <button className="btn" onClick={e => { e.stopPropagation(); save(); }} style={{ padding: "5px 14px", background: color, border: "none", borderRadius: 5, color: "#0A0A0A", fontSize: 11, fontWeight: 700 }}>Save</button>
+              <button className="btn" onClick={e => { e.stopPropagation(); setDraft(value); setEditing(false); }} style={{ padding: "5px 14px", background: "transparent", border: "1px solid #2E2E3A", borderRadius: 5, color: "#5A5A6A", fontSize: 11 }}>Cancel</button>
+              <span style={{ fontSize: 10, color: "#38383E", alignSelf: "center", marginLeft: 4 }}>Esc to cancel</span>
+            </div>
+          </div>
+        ) : (
+          <div style={{ padding: "13px 14px", fontSize: 13, color: value ? "#B8B8B8" : "#38383E", lineHeight: 1.8, whiteSpace: "pre-wrap", fontStyle: value ? "normal" : "italic" }}>
+            {prefix}{value || "[empty — click to fill]"}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+
 export default function PromptGuide() {
-  const [view, setView] = useState("template"); // "template" | "assembled" | "power"
-  const [step, setStep] = useState(0); // 0-4
-  const [fields, setFields] = useState({ role: "", task: "", context: "", constraints: "" });
+  const [view, setView] = useState("template");
+  const [step, setStep] = useState(0);
+  const [fields, setFields] = useState(loadFields);
   const [copied, setCopied] = useState(false);
+  const [flashField, setFlashField] = useState(null);
+  const [stepKey, setStepKey] = useState(0); // triggers re-mount for animation
+  const [justCompleted, setJustCompleted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  useEffect(() => { saveFields(fields); }, [fields]);
+
+  // ⌘↵ to advance
+  useEffect(() => {
+    const h = (e) => {
+      if (view !== "template") return;
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); goNext(); }
+    };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [view, step]); // eslint-disable-line
+
+  // Focus textarea on step change
+  useEffect(() => {
+    if (textareaRef.current) setTimeout(() => textareaRef.current?.focus(), 100);
+  }, [step]);
 
   const S = TEMPLATE_STEPS[step];
+  const allEmpty = !fields.role && !fields.task && !fields.context && !fields.constraints;
+  const filledCount = TEMPLATE_STEPS.filter(s => s.field && fields[s.field]?.trim()).length;
 
   const assembled = [
     `You are a top 0.1% expert in ${fields.role || "[FIELD]"}.`,
@@ -124,228 +383,415 @@ export default function PromptGuide() {
 
   const doCopy = () => copyText(assembled, () => { setCopied(true); setTimeout(() => setCopied(false), 2500); });
 
-  const goNext = () => {
-    if (step < 4) { setStep(s => s + 1); }
-    else { setView("assembled"); }
+  const updateField = (key, val) => {
+    setFields(f => ({ ...f, [key]: val }));
+    setFlashField(key);
+    setTimeout(() => setFlashField(null), 600);
   };
+
+  const goNext = () => {
+    if (step < 4) {
+      setStepKey(k => k + 1);
+      setStep(s => s + 1);
+    } else {
+      setJustCompleted(true);
+      setTimeout(() => setJustCompleted(false), 700);
+      setView("assembled");
+    }
+  };
+
   const goBack = () => {
     if (view === "assembled") { setView("template"); setStep(4); }
-    else if (step > 0) { setStep(s => s - 1); }
+    else if (step > 0) { setStepKey(k => k + 1); setStep(s => s - 1); }
   };
 
-  const btnStyle = (bg, fg, extra = {}) => ({
-    padding: "9px 20px", background: bg, border: "none", borderRadius: "4px",
-    color: fg, fontSize: "11px", fontWeight: "700", letterSpacing: "0.06em",
-    cursor: "pointer", fontFamily: "'IBM Plex Mono', monospace", transition: "opacity 0.15s", ...extra
-  });
+  const clearAll = () => {
+    if (window.confirm("Clear all fields and start over?")) {
+      const empty = { role: "", task: "", context: "", constraints: "" };
+      setFields(empty); saveFields(empty); setStep(0); setView("template");
+    }
+  };
 
-  const navActive = (v) => view === v || (v === "template" && view === "assembled" && false);
+  const handleNavClick = (v) => {
+    if (v === "assembled" && allEmpty) { setView("template"); setStep(0); return; }
+    setView(v);
+  };
 
-  return (
-    <div style={{ fontFamily: "'IBM Plex Mono', monospace", background: "#0A0A0A", minHeight: "100vh", color: "#E8E8E8" }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Bebas+Neue&display=swap');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #2A2A2A; border-radius: 2px; }
-        textarea { font-family: 'IBM Plex Mono', monospace; }
-        button:hover { opacity: 0.82; }
-        button:active { transform: scale(0.97); }
-      `}</style>
+  const qualityThresholds = { role: 20, task: 50, context: 100, constraints: 40 };
 
-      {/* Header */}
-      <div style={{ background: "#0F0F0F", borderBottom: "1px solid #1A1A1A", padding: "18px 28px", display: "flex", alignItems: "center", gap: "14px" }}>
-        <div style={{ width: "5px", height: "40px", background: "#C8F04E", borderRadius: "2px", flexShrink: 0 }} />
+  // preview line color — each line matches its step accent
+  const lineColor = (line) => {
+    if (line.startsWith("You are")) return "#B8F060";   // ROLE
+    if (line.startsWith("Context:")) return "#FFAD3D";  // CONTEXT
+    if (line.startsWith("Constraints:")) return "#F0527A"; // CONSTRAINTS
+    if (line.startsWith("Ask me")) return "#9B6EEA";    // CLARIFY
+    if (line.trim()) return "#5DD8F5";                  // TASK — anything else with content
+    return null;
+  };
+  const lineField = (line) => {
+    if (line.startsWith("You are")) return "role";
+    if (line.startsWith("Context:")) return "context";
+    if (line.startsWith("Constraints:")) return "constraints";
+    if (line.trim() && !line.startsWith("Ask me")) return "task";
+    return null;
+  };
+
+  // ── Header ─────────────────────────────────────────────────────────────────
+  const Header = () => (
+    <div style={{ background: "#070709", borderBottom: "1px solid #1E1E26", padding: isMobile ? "12px 16px" : "0 32px", height: isMobile ? "auto" : 56, display: "flex", alignItems: "center", gap: 16, position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(8px)" }}>
+      {/* Logo mark */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+        <div style={{ width: 3, height: 28, background: "#B8F060", borderRadius: 2 }} />
         <div>
-          <div style={{ fontFamily: "'Bebas Neue'", fontSize: "26px", letterSpacing: "0.06em", color: "#E8E8E8", lineHeight: 1 }}>Prompt Engineering Template</div>
-        </div>
-        <div style={{ marginLeft: "auto", display: "flex", gap: "6px" }}>
-          {[
-            { label: "TEMPLATE", v: "template" },
-            { label: "ASSEMBLED", v: "assembled" },
-            { label: "POWER MOVES", v: "power" },
-          ].map(({ label, v }) => (
-            <button key={v} onClick={() => setView(v)}
-              style={{ padding: "6px 13px", borderRadius: "3px", fontSize: "9px", letterSpacing: "0.14em", fontWeight: "700", background: view === v ? "#C8F04E" : "#161616", color: view === v ? "#0A0A0A" : "#484848", border: "1px solid #242424", cursor: "pointer", fontFamily: "'IBM Plex Mono', monospace", transition: "all 0.15s" }}>
-              {label}
-            </button>
-          ))}
+          <div style={{ fontFamily: "'Bebas Neue'", fontSize: 18, letterSpacing: "0.08em", color: "#EEEEF2", lineHeight: 1 }}>ROUGE</div>
+          <div style={{ fontSize: 10, color: "#5A5A6A", marginTop: 1, letterSpacing: "0.04em" }}>AI Prompt Engineer</div>
         </div>
       </div>
 
-      {/* ── TEMPLATE VIEW ── */}
-      {view === "template" && (
-        <div style={{ display: "grid", gridTemplateColumns: "210px 1fr 290px", height: "calc(100vh - 77px)" }}>
+      {/* Nav */}
+      <div style={{ display: "flex", gap: 0, marginLeft: isMobile ? "auto" : 32, borderBottom: "none" }}>
+        {[
+          { label: isMobile ? "BUILD" : "Template", v: "template" },
+          { label: isMobile ? "RESULT" : "Assembled", v: "assembled" },
+          { label: isMobile ? "MOVES" : "Power Moves", v: "power" },
+        ].map(({ label, v }) => {
+          const active = view === v;
+          const isPower = v === "power";
+          return (
+            <button key={v} className={`btn${active ? " nav-active" : ""}`} onClick={() => handleNavClick(v)}
+              style={{ padding: isMobile ? "6px 10px" : "0 16px", height: isMobile ? "auto" : 56, background: "transparent", border: "none", fontSize: 13, fontWeight: active ? 600 : 400, color: active ? "#EEEEF2" : isPower ? "#B8F060" : "#38383E", cursor: "pointer", position: "relative", letterSpacing: "0.01em", transition: "color 0.15s" }}>
+              {label}
+            </button>
+          );
+        })}
+      </div>
 
-          {/* Sidebar */}
-          <div style={{ borderRight: "1px solid #161616", padding: "16px 0", display: "flex", flexDirection: "column", gap: "2px", overflowY: "auto" }}>
-            {TEMPLATE_STEPS.map((s, i) => {
-              const done = s.field && fields[s.field] && fields[s.field].trim().length > 0;
-              const active = step === i;
-              return (
-                <button key={i} onClick={() => setStep(i)}
-                  style={{ padding: "11px 18px", textAlign: "left", borderLeft: active ? `3px solid ${s.color}` : "3px solid transparent", background: active ? "#111" : "transparent", display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", border: "none", borderLeft: active ? `3px solid ${s.color}` : "3px solid transparent" }}>
-                  <div style={{ width: "20px", height: "20px", borderRadius: "3px", flexShrink: 0, background: active ? s.color : done ? s.color + "25" : "#161616", border: done && !active ? `1px solid ${s.color}55` : "none", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", fontWeight: "700", color: active ? "#0A0A0A" : done ? s.color : "#2E2E2E" }}>
-                    {done && !active ? "✓" : s.id}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: "8px", letterSpacing: "0.16em", color: active ? s.color : "#303030", fontWeight: "700" }}>{s.label}</div>
-                    <div style={{ fontSize: "10px", color: active ? "#CCC" : "#404040", marginTop: "1px" }}>{s.title}</div>
-                  </div>
-                </button>
-              );
-            })}
-            <div style={{ margin: "12px 18px 8px", height: "1px", background: "#161616" }} />
-            <div style={{ padding: "0 18px", fontSize: "9px", color: "#262626", lineHeight: "1.6" }}>Fill steps 1–4, then copy the assembled prompt.</div>
+      {/* Right side */}
+      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+        {!isMobile && view === "template" && (
+          <div style={{ fontSize: 11, color: "#5A5A6A", fontFamily: "'DM Mono', monospace" }}>
+            <span style={{ padding: "2px 6px", background: "#141418", border: "1px solid #1E1E26", borderRadius: 3 }}>⌘↵</span>
+            {" "}next
           </div>
+        )}
+        {filledCount > 0 && (
+          <button className="btn" onClick={clearAll} style={{ fontSize: 11, color: "#38383E", background: "transparent", border: "1px solid #1E1E26", borderRadius: 6, padding: "4px 10px", transition: "all 0.15s" }}
+            onMouseEnter={e => { e.currentTarget.style.color = "#5A5A6A"; e.currentTarget.style.borderColor = "#38383E"; }}
+            onMouseLeave={e => { e.currentTarget.style.color = "#38383E"; e.currentTarget.style.borderColor = "#1E1E26"; }}>
+            ↺ Clear
+          </button>
+        )}
+      </div>
+    </div>
+  );
 
-          {/* Main */}
-          <div style={{ padding: "28px 30px", overflowY: "auto" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "9px", marginBottom: "5px" }}>
-              <div style={{ padding: "2px 8px", background: S.color + "15", border: `1px solid ${S.color}35`, borderRadius: "3px", fontSize: "8px", letterSpacing: "0.2em", color: S.color, fontWeight: "700" }}>{S.label}</div>
-              <div style={{ fontSize: "9px", color: "#303030" }}>Step {S.id} of 5</div>
-            </div>
-            <h2 style={{ fontFamily: "'Bebas Neue'", fontSize: "24px", letterSpacing: "0.06em", color: "#E8E8E8", marginBottom: "10px" }}>{S.title}</h2>
-            <div style={{ padding: "9px 13px", background: "#0D0D0D", border: `1px solid ${S.color}28`, borderRadius: "4px", marginBottom: "14px", fontSize: "11px", color: S.color, lineHeight: "1.5" }}>
-              {S.instruction}
-            </div>
-            <p style={{ fontSize: "11px", lineHeight: "1.8", color: "#777", marginBottom: "18px" }}>{S.description}</p>
+  // ══════════════════════════════════════════════════════════════════════════
+  // TEMPLATE VIEW
+  // ══════════════════════════════════════════════════════════════════════════
+  if (view === "template") {
+    const charCount = S.field ? (fields[S.field]?.length || 0) : 0;
+    const threshold = S.field ? (qualityThresholds[S.field] || 40) : 0;
 
-            {S.field ? (
-              <>
-                <div style={{ fontSize: "8px", letterSpacing: "0.16em", color: "#383838", marginBottom: "6px", textTransform: "uppercase" }}>Your Input</div>
-                <textarea value={fields[S.field]} onChange={e => setFields(f => ({ ...f, [S.field]: e.target.value }))}
-                  placeholder={S.placeholder} rows={4}
-                  style={{ width: "100%", background: "#0D0D0D", border: "1px solid #202020", borderRadius: "4px", padding: "10px 12px", fontSize: "11px", color: "#E8E8E8", lineHeight: "1.6", outline: "none", resize: "vertical" }} />
-              </>
-            ) : (
-              <div style={{ padding: "14px 16px", background: "#0D0D0D", border: `1px solid ${S.color}28`, borderRadius: "4px" }}>
-                <div style={{ fontSize: "9px", color: S.color, fontWeight: "700", marginBottom: "10px", letterSpacing: "0.12em" }}>ADD THIS VERBATIM TO EVERY COMPLEX PROMPT:</div>
-                <div style={{ fontSize: "12px", color: "#C0C0C0", lineHeight: "1.7", fontStyle: "italic", padding: "10px 12px", background: "#161616", borderRadius: "3px" }}>
-                  "Ask me clarifying questions one at a time until you are 95% confident you can complete this task successfully."
-                </div>
-              </div>
-            )}
+    return (
+      <div style={{ fontFamily: "'DM Sans', sans-serif", background: "#070709", minHeight: "100vh", color: "#EEEEF2" }}>
+        <style>{GLOBAL_CSS}</style>
+        <Header />
 
-            {S.examples.length > 0 && (
-              <div style={{ marginTop: "18px" }}>
-                <div style={{ fontSize: "8px", letterSpacing: "0.16em", color: "#303030", marginBottom: "7px", textTransform: "uppercase" }}>Click an example to use it</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                  {S.examples.map((ex, i) => (
-                    <div key={i} onClick={() => S.field && setFields(f => ({ ...f, [S.field]: ex }))}
-                      style={{ padding: "7px 11px", background: "#0D0D0D", border: "1px solid #1C1C1C", borderRadius: "4px", fontSize: "10px", color: "#5A5A5A", lineHeight: "1.5", cursor: S.field ? "pointer" : "default", transition: "border-color 0.15s" }}
-                      onMouseEnter={e => { if (S.field) e.currentTarget.style.borderColor = "#333"; }}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = "#1C1C1C"}>
-                      <span style={{ color: "#2E2E2E" }}>→ </span>{ex}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "220px 1fr 272px", height: isMobile ? "auto" : "calc(100vh - 56px)" }}>
 
-            <div style={{ marginTop: "16px", padding: "9px 13px", background: "#0B150B", border: "1px solid #152015", borderRadius: "4px", fontSize: "10px", color: "#4E7A4E", display: "flex", gap: "7px" }}>
-              <span style={{ flexShrink: 0 }}>💡</span><span>{S.tip}</span>
-            </div>
-
-            <div style={{ display: "flex", gap: "9px", marginTop: "22px" }}>
-              {step > 0 && (
-                <button onClick={goBack} style={{ padding: "9px 16px", background: "#131313", border: "1px solid #202020", borderRadius: "4px", color: "#666", fontSize: "11px", cursor: "pointer", fontFamily: "'IBM Plex Mono', monospace" }}>
-                  ← Back
-                </button>
-              )}
-              <button onClick={goNext} style={{ padding: "9px 22px", background: S.color, border: "none", borderRadius: "4px", color: "#0A0A0A", fontSize: "11px", fontWeight: "700", letterSpacing: "0.06em", cursor: "pointer", fontFamily: "'IBM Plex Mono', monospace" }}>
-                {step < 4 ? "Next Step →" : "View Assembled Prompt →"}
-              </button>
-            </div>
-          </div>
-
-          {/* Right live preview */}
-          <div style={{ borderLeft: "1px solid #161616", padding: "18px", display: "flex", flexDirection: "column" }}>
-            <div style={{ fontSize: "8px", letterSpacing: "0.2em", color: "#383838", marginBottom: "10px", textTransform: "uppercase" }}>Live Preview</div>
-            <div style={{ flex: 1, background: "#070707", border: "1px solid #181818", borderRadius: "4px", padding: "12px", fontSize: "9px", lineHeight: "2", overflowY: "auto", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-              {assembled.split("\n").map((line, i) => {
-                let c = "#303030";
-                if (line.startsWith("You are")) c = "#C8F04E";
-                else if (line.startsWith("Ask me")) c = "#A44EF0";
-                else if (line.startsWith("Context:")) c = "#F0A64E";
-                else if (line.startsWith("Constraints:")) c = "#F04E8A";
-                else if (line.trim()) c = "#A0A0A0";
-                return <div key={i} style={{ color: c, minHeight: !line.trim() ? "8px" : "auto" }}>{line || " "}</div>;
+          {/* ── Sidebar ── */}
+          {isMobile ? (
+            <div style={{ padding: "10px 16px", borderBottom: "1px solid #1E1E26", display: "flex", gap: 6, overflowX: "auto" }}>
+              {TEMPLATE_STEPS.map((s, i) => {
+                const done = s.field && fields[s.field]?.trim();
+                const active = step === i;
+                return (
+                  <button key={i} className="btn" onClick={() => { setStepKey(k => k + 1); setStep(i); }} style={{ padding: "5px 12px", borderRadius: 20, flexShrink: 0, background: active ? s.color : done ? s.color + "20" : "#111", border: `1px solid ${active ? s.color : done ? s.color + "50" : "#222"}`, color: active ? "#0A0A0A" : done ? s.color : "#38383E", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em" }}>
+                    {done && !active ? "✓ " : ""}{s.label}
+                  </button>
+                );
               })}
             </div>
-            <button onClick={doCopy}
-              style={{ marginTop: "9px", padding: "10px", background: copied ? "#0C1A0C" : "#131313", border: `1px solid ${copied ? "#264026" : "#202020"}`, borderRadius: "4px", color: copied ? "#4E8A4E" : "#484848", fontSize: "10px", letterSpacing: "0.08em", fontWeight: "600", textAlign: "center", cursor: "pointer", fontFamily: "'IBM Plex Mono', monospace", transition: "all 0.2s" }}>
-              {copied ? "✓  Copied!" : "Copy Full Prompt"}
-            </button>
-            <button onClick={() => setView("assembled")}
-              style={{ marginTop: "6px", padding: "8px", background: "transparent", border: "1px solid #181818", borderRadius: "4px", color: "#303030", fontSize: "9px", textAlign: "center", letterSpacing: "0.06em", cursor: "pointer", fontFamily: "'IBM Plex Mono', monospace" }}>
-              Expand View →
-            </button>
+          ) : (
+            <div style={{ borderRight: "1px solid #1E1E26", padding: "24px 0", display: "flex", flexDirection: "column", overflowY: "auto" }}>
+              {TEMPLATE_STEPS.map((s, i) => {
+                const done = s.field && fields[s.field]?.trim();
+                const active = step === i;
+                return (
+                  <button key={i} className="btn sidebar-item" onClick={() => { setStepKey(k => k + 1); setStep(i); }}
+                    style={{ padding: "11px 20px", textAlign: "left", borderLeft: `2px solid ${active ? s.color : "transparent"}`, background: active ? "#0D0D0D" : "transparent", display: "flex", alignItems: "center", gap: 12, border: "none", borderLeft: `2px solid ${active ? s.color : "transparent"}`, cursor: "pointer" }}>
+                    {/* Step indicator */}
+                    <div style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, background: active ? s.color : done ? s.color + "22" : "#141414", border: done && !active ? `1px solid ${s.color}55` : "none", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: active ? "#0A0A0A" : done ? s.color : "#38383E", transition: "all 0.2s", fontFamily: "'DM Mono', monospace" }}>
+                      {done && !active ? "✓" : s.id}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 10, letterSpacing: "0.12em", color: active ? s.color : done ? s.color + "99" : "#38383E", fontWeight: 700, fontFamily: "'DM Mono', monospace", marginBottom: 1 }}>{s.label}</div>
+                      <div style={{ fontSize: 12, color: active ? "#CCC" : done ? "#5A5A6A" : "#38383E", fontWeight: active ? 500 : 400 }}>{s.title}</div>
+                    </div>
+                  </button>
+                );
+              })}
+
+              <div style={{ margin: "20px 20px 12px", height: 1, background: "#141418" }} />
+              <div style={{ padding: "0 20px" }}>
+                <div style={{ fontSize: 11, color: "#5A5A6A", lineHeight: 1.6, marginBottom: 8 }}>{filledCount} of 4 fields filled</div>
+                <div style={{ height: 2, background: "#141418", borderRadius: 1, overflow: "hidden", marginBottom: 12 }}>
+                  <div style={{ height: "100%", width: `${(filledCount / 4) * 100}%`, background: "#B8F060", borderRadius: 1, transition: "width 0.4s cubic-bezier(0.22,1,0.36,1)" }} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Main content ── */}
+          <div style={{ padding: isMobile ? "20px 16px" : "32px 36px", overflowY: "auto" }}>
+            {/* Step dots */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+              <StepDots fields={fields} step={step} />
+              <div style={{ fontSize: 11, color: "#5A5A6A", fontFamily: "'DM Mono', monospace" }}>
+                {step + 1} / 5
+              </div>
+            </div>
+
+            {/* Animated step content */}
+            <div key={stepKey} className="step-in">
+              {/* Step label + title */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                <div style={{ padding: "2px 8px", background: S.color + "15", border: `1px solid ${S.color}35`, borderRadius: 4, fontSize: 10, letterSpacing: "0.16em", color: S.color, fontWeight: 700, fontFamily: "'DM Mono', monospace" }}>{S.label}</div>
+              </div>
+              <h2 style={{ fontSize: isMobile ? 26 : 30, fontWeight: 600, color: "#EEEEF2", marginBottom: 6, letterSpacing: "-0.02em", lineHeight: 1.2 }}>{S.title}</h2>
+
+              {/* Instruction chip */}
+              <div style={{ display: "inline-block", padding: "8px 14px", background: S.color + "10", border: `1px solid ${S.color}28`, borderRadius: 8, marginBottom: 10, fontSize: 13, color: S.color, lineHeight: 1.4, fontFamily: "'DM Mono', monospace" }}>
+                {S.instruction}
+              </div>
+
+              {/* Hint */}
+              <div style={{ fontSize: 13, color: "#9898A8", marginBottom: 20, lineHeight: 1.6 }}>{S.hint}</div>
+
+              {/* Input */}
+              {S.field ? (
+                <div>
+                  <div style={{ fontSize: 11, letterSpacing: "0.1em", color: S.color, marginBottom: 6, fontWeight: 600, fontFamily: "'DM Mono', monospace", textTransform: "uppercase" }}>Your Input</div>
+                  <textarea
+                    ref={textareaRef}
+                    value={fields[S.field]}
+                    onChange={e => updateField(S.field, e.target.value)}
+                    placeholder={S.placeholder} rows={4}
+                    style={{ width: "100%", background: "#0E0E12", border: `1px solid ${fields[S.field] ? S.color + "45" : "#1E1E26"}`, borderRadius: 10, padding: "13px 15px", fontSize: 13, color: "#EEEEF2", lineHeight: 1.7, resize: "vertical", transition: "border-color 0.2s, box-shadow 0.2s", boxShadow: "none" }}
+                    onFocus={e => { e.target.style.borderColor = S.color + "70"; e.target.style.boxShadow = `0 0 0 3px ${S.color}0C`; }}
+                    onBlur={e => { e.target.style.borderColor = fields[S.field] ? S.color + "45" : "#1E1E26"; e.target.style.boxShadow = "none"; }}
+                  />
+
+                  {/* Quality bar */}
+                  <QualityBar value={charCount} threshold={threshold} color={S.color} />
+
+                  {/* Persistent example */}
+                  {S.persistentExample && (
+                    <div style={{ marginTop: 10, fontSize: 12, color: "#5A5A6A" }}>
+                      <span style={{ color: "#38383E" }}>e.g. </span>
+                      <span style={{ color: "#5A5A6A", fontStyle: "italic" }}>{S.persistentExample}</span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Step 5 — clarify box */
+                <div style={{ padding: "18px 20px", background: S.color + "08", border: `1px solid ${S.color}25`, borderRadius: 10 }}>
+                  <div style={{ fontSize: 11, color: S.color, fontWeight: 700, marginBottom: 10, letterSpacing: "0.1em", fontFamily: "'DM Mono', monospace" }}>ADD THIS VERBATIM TO EVERY COMPLEX PROMPT</div>
+                  <div style={{ fontSize: 13, color: "#9898A8", lineHeight: 1.8, fontStyle: "italic", padding: "12px 14px", background: "#0E0E12", borderRadius: 7, fontFamily: "'DM Mono', monospace" }}>
+                    "Ask me clarifying questions one at a time until you are 95% confident you can complete this task successfully."
+                  </div>
+                </div>
+              )}
+
+              {/* Examples */}
+              {S.examples.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <div style={{ fontSize: 11, color: "#5A5A6A", marginBottom: 8 }}>Click an example to use it ↓</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                    {S.examples.map((ex, i) => (
+                      <div key={i} className="ex-chip"
+                        onClick={() => updateField(S.field, ex)}
+                        style={{ padding: "9px 13px", background: "#0E0E12", border: "1px solid #1E1E26", borderRadius: 8, fontSize: 12, color: "#9898A8", lineHeight: 1.5, cursor: "pointer", display: "flex", alignItems: "flex-start", gap: 8 }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = S.color + "55"; e.currentTarget.style.color = "#AAAAAA"; e.currentTarget.style.background = "#141418"; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = "#1E1E26"; e.currentTarget.style.color = "#9898A8"; e.currentTarget.style.background = "#0C0C0C"; }}>
+                        <span style={{ color: S.color, flexShrink: 0, marginTop: 1, fontSize: 10 }}>↗</span>
+                        {ex}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Tip — uses step color */}
+              <div style={{ marginTop: 18, padding: "10px 14px", background: S.color + "08", border: `1px solid ${S.color}18`, borderRadius: 8, fontSize: 12, color: S.color + "BB", display: "flex", gap: 8, lineHeight: 1.6 }}>
+                <span style={{ flexShrink: 0 }}>💡</span>
+                <span>{S.tip}</span>
+              </div>
+
+              {/* Nav buttons */}
+              <div style={{ display: "flex", gap: 10, marginTop: 24, alignItems: "center" }}>
+                {step > 0 && (
+                  <button className="btn" onClick={goBack} style={{ padding: "10px 18px", background: "#0E0E12", border: "1px solid #1E1E26", borderRadius: 8, color: "#5A5A6A", fontSize: 13, fontWeight: 500 }}>
+                    ← Back
+                  </button>
+                )}
+                <button className={`btn${step === 4 ? " complete-pulse" : ""}`} onClick={goNext}
+                  style={{ padding: step === 4 ? "13px 30px" : "10px 22px", background: S.color, border: "none", borderRadius: 8, color: "#0A0A0A", fontSize: step === 4 ? 14 : 13, fontWeight: 700, letterSpacing: "0.02em", boxShadow: step === 4 ? `0 0 28px ${S.color}35` : "none", transition: "all 0.25s" }}>
+                  {step < 4 ? "Next →" : "Build My Prompt →"}
+                </button>
+                {step === 4 && <div style={{ fontSize: 12, color: "#5A5A6A" }}>You're ready ✓</div>}
+              </div>
+
+              {/* Step 5 — Power Moves nudge */}
+              {step === 4 && (
+                <div style={{ marginTop: 20, padding: "14px 16px", background: "#0E0E12", border: "1px solid #1E1E26", borderRadius: 10, display: "flex", alignItems: "flex-start", gap: 12 }}>
+                  <div style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>⚡</div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#EEEEF2", marginBottom: 4 }}>Before you copy — check Power Moves</div>
+                    <div style={{ fontSize: 12, color: "#5A5A6A", lineHeight: 1.6, marginBottom: 10 }}>
+                      Sparring partner, devil's advocate, reusable skills — prompts that go beyond the template.
+                    </div>
+                    <button className="btn" onClick={() => setView("power")}
+                      style={{ padding: "6px 14px", background: "transparent", border: "1px solid #B8F060", borderRadius: 6, color: "#B8F060", fontSize: 11, fontWeight: 600, letterSpacing: "0.04em" }}>
+                      View Power Moves →
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Mobile smart nudge */}
+              {isMobile && S.field && charCount > 12 && step < 4 && (
+                <div style={{ marginTop: 12, padding: "10px 14px", background: "#0E0E12", border: `1px solid ${S.color}28`, borderRadius: 8, fontSize: 12, color: S.color, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span>Looks good</span>
+                  <button className="btn" onClick={goNext} style={{ background: S.color, border: "none", borderRadius: 5, padding: "5px 14px", color: "#0A0A0A", fontSize: 11, fontWeight: 700 }}>Next →</button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── Right preview panel ── */}
+          {!isMobile && (
+            <div style={{ borderLeft: "1px solid #1E1E26", padding: "24px 20px", display: "flex", flexDirection: "column" }}>
+              <div style={{ fontSize: 10, letterSpacing: "0.16em", color: "#5A5A6A", marginBottom: 12, fontFamily: "'DM Mono', monospace", textTransform: "uppercase" }}>Live Preview</div>
+              <div style={{ flex: 1, background: "#070709", border: "1px solid #1E1E26", borderRadius: 10, padding: "14px 16px", fontSize: 12, lineHeight: 2, overflowY: "auto", whiteSpace: "pre-wrap", wordBreak: "break-word", fontFamily: "'DM Mono', monospace" }}>
+                {assembled.split("\n").map((line, i) => {
+                  const c = lineColor(line) || "#38383E";
+                  const fl = lineField(line);
+                  const flashing = fl && fl === flashField;
+                  return (
+                    <div key={i} className={flashing ? "line-flash" : ""} style={{ color: c, minHeight: !line.trim() ? "10px" : "auto" }}>
+                      {line || " "}
+                    </div>
+                  );
+                })}
+              </div>
+              <button className="btn" onClick={doCopy} style={{ marginTop: 10, padding: 11, background: copied ? "#0A1A0F" : "#141418", border: `1px solid ${copied ? "#1E4A2A" : "#1E1E26"}`, borderRadius: 8, color: copied ? "#4ABA74" : "#38383E", fontSize: 12, fontWeight: 600, textAlign: "center", transition: "all 0.2s" }}>
+                {copied ? "✓  Copied!" : "Copy Full Prompt"}
+              </button>
+              <button className="btn" onClick={() => setView("assembled")} style={{ marginTop: 7, padding: 9, background: "transparent", border: "1px solid #1E1E26", borderRadius: 8, color: "#38383E", fontSize: 11, textAlign: "center", letterSpacing: "0.04em", transition: "all 0.15s" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "#38383E"; e.currentTarget.style.color = "#AAA"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "#1A1A1A"; e.currentTarget.style.color = "#38383E"; }}>
+                Expand Full View →
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // ASSEMBLED VIEW
+  // ══════════════════════════════════════════════════════════════════════════
+  if (view === "assembled") {
+    if (allEmpty) {
+      return (
+        <div style={{ fontFamily: "'DM Sans', sans-serif", background: "#070709", minHeight: "100vh", color: "#EEEEF2" }}>
+          <style>{GLOBAL_CSS}</style>
+          <Header />
+          <div className="fade-up" style={{ maxWidth: 480, margin: "80px auto", padding: "0 24px", textAlign: "center" }}>
+            <div style={{ fontSize: 44, marginBottom: 20 }}>📋</div>
+            <h2 style={{ fontSize: 26, fontWeight: 600, color: "#EEEEF2", marginBottom: 10, letterSpacing: "-0.02em" }}>Nothing here yet</h2>
+            <p style={{ fontSize: 13, color: "#9898A8", lineHeight: 1.7, marginBottom: 24 }}>Fill in your Role, Task, Context, and Constraints first — then your assembled prompt appears here ready to copy.</p>
+            <button className="btn" onClick={() => { setView("template"); setStep(0); }} style={{ padding: "12px 28px", background: "#B8F060", border: "none", borderRadius: 8, color: "#0A0A0A", fontSize: 13, fontWeight: 700, letterSpacing: "0.02em" }}>← Start Building</button>
           </div>
         </div>
-      )}
+      );
+    }
 
-      {/* ── ASSEMBLED VIEW ── */}
-      {view === "assembled" && (
-        <div style={{ maxWidth: "780px", margin: "0 auto", padding: "36px 28px" }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "22px" }}>
+    const sections = [
+      { label: "ROLE", color: "#B8F060", field: "role", prefix: "You are a top 0.1% expert in ", value: fields.role },
+      { label: "TASK", color: "#5DD8F5", field: "task", prefix: "", value: fields.task },
+      { label: "CONTEXT", color: "#FFAD3D", field: "context", prefix: "Context: ", value: fields.context },
+      { label: "CONSTRAINTS", color: "#F0527A", field: "constraints", prefix: "Constraints: ", value: fields.constraints },
+      { label: "CLARIFY", color: "#9B6EEA", field: null, prefix: "", value: "Ask me clarifying questions one at a time until you are 95% confident you can complete this task successfully." },
+    ];
+
+    return (
+      <div style={{ fontFamily: "'DM Sans', sans-serif", background: "#070709", minHeight: "100vh", color: "#EEEEF2" }}>
+        <style>{GLOBAL_CSS}</style>
+        <Header />
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: isMobile ? "20px 16px" : "36px 28px" }}>
+
+          {/* Header row */}
+          <div className="fade-up fade-up-1" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24, gap: 12 }}>
             <div>
-              <div style={{ fontSize: "9px", letterSpacing: "0.2em", color: "#383838", marginBottom: "3px", textTransform: "uppercase" }}>Ready to use</div>
-              <h2 style={{ fontFamily: "'Bebas Neue'", fontSize: "30px", letterSpacing: "0.06em", color: "#E8E8E8" }}>Your Assembled Prompt</h2>
+              <div style={{ fontSize: 10, letterSpacing: "0.16em", color: "#38383E", marginBottom: 4, textTransform: "uppercase", fontFamily: "'DM Mono', monospace" }}>Ready to use</div>
+              <h2 style={{ fontSize: isMobile ? 24 : 28, fontWeight: 600, color: "#EEEEF2", letterSpacing: "-0.02em" }}>Your Assembled Prompt</h2>
+              <div style={{ fontSize: 12, color: "#5A5A6A", marginTop: 5 }}>
+                Want to go deeper?{" "}
+                <span onClick={() => setView("power")} style={{ color: "#B8F060", cursor: "pointer" }}>Try a Power Move →</span>
+              </div>
             </div>
-            <div style={{ display: "flex", gap: "7px" }}>
-              <button onClick={goBack} style={{ padding: "9px 14px", background: "#131313", border: "1px solid #202020", borderRadius: "4px", color: "#666", fontSize: "10px", cursor: "pointer", fontFamily: "'IBM Plex Mono', monospace" }}>← Edit</button>
-              <button onClick={doCopy} style={{ padding: "9px 18px", background: copied ? "#0C1A0C" : "#C8F04E", border: "none", borderRadius: "4px", color: copied ? "#4E8A4E" : "#0A0A0A", fontSize: "10px", fontWeight: "700", letterSpacing: "0.06em", cursor: "pointer", fontFamily: "'IBM Plex Mono', monospace", transition: "all 0.2s" }}>
+            <div style={{ display: "flex", gap: 7, flexShrink: 0 }}>
+              <button className="btn" onClick={goBack} style={{ padding: "9px 16px", background: "#0E0E12", border: "1px solid #1E1E26", borderRadius: 8, color: "#5A5A6A", fontSize: 12, fontWeight: 500 }}>← Edit</button>
+              <button className="btn" onClick={doCopy} style={{ padding: "9px 22px", background: copied ? "#0A1A0F" : "#B8F060", border: "none", borderRadius: 8, color: copied ? "#4ABA74" : "#0A0A0A", fontSize: 12, fontWeight: 700, letterSpacing: "0.02em", transition: "all 0.2s", boxShadow: copied ? "none" : "0 0 20px #B8F06028" }}>
                 {copied ? "✓  Copied!" : "Copy Prompt"}
               </button>
             </div>
           </div>
 
-          {[
-            { label: "ROLE", color: "#C8F04E", text: `You are a top 0.1% expert in ${fields.role || "[FIELD]"}.` },
-            { label: "TASK", color: "#4ECAF0", text: fields.task || "[TASK + OUTPUT FORMAT]" },
-            { label: "CONTEXT", color: "#F0A64E", text: `Context: ${fields.context || "[YOUR CONTEXT]"}` },
-            { label: "CONSTRAINTS", color: "#F04E8A", text: `Constraints: ${fields.constraints || "[YOUR CONSTRAINTS]"}` },
-            { label: "CLARIFY", color: "#A44EF0", text: "Ask me clarifying questions one at a time until you are 95% confident you can complete this task successfully." },
-          ].map(({ label, color, text }) => (
-            <div key={label} style={{ marginBottom: "10px", borderRadius: "5px", overflow: "hidden", border: `1px solid ${color}20` }}>
-              <div style={{ padding: "5px 13px", background: color + "14", borderBottom: `1px solid ${color}20` }}>
-                <span style={{ fontSize: "8px", letterSpacing: "0.2em", color: color, fontWeight: "700" }}>{label}</span>
-              </div>
-              <div style={{ padding: "12px 14px", background: "#0C0C0C", fontSize: "12px", color: "#C8C8C8", lineHeight: "1.7", whiteSpace: "pre-wrap" }}>{text}</div>
-            </div>
-          ))}
-
-          <div style={{ marginTop: "22px" }}>
-            <div style={{ fontSize: "8px", letterSpacing: "0.2em", color: "#2A2A2A", marginBottom: "7px", textTransform: "uppercase" }}>Raw prompt — click to select all, then copy</div>
-            <textarea readOnly value={assembled} rows={11} onClick={e => e.target.select()}
-              style={{ width: "100%", background: "#070707", border: "1px solid #1A1A1A", borderRadius: "4px", padding: "13px 14px", fontSize: "11px", color: "#7A7A7A", lineHeight: "1.7", outline: "none", cursor: "text", resize: "vertical" }} />
+          {/* Editable section cards */}
+          <div className="fade-up fade-up-2">
+            <div style={{ fontSize: 11, color: "#5A5A6A", marginBottom: 10 }}>Click any section to edit inline ↓</div>
+            {sections.map(({ label, color, field, prefix, value }) => (
+              <EditableCard key={label} label={label} color={color} field={field} prefix={prefix} value={value}
+                onChange={field ? v => updateField(field, v) : null} />
+            ))}
           </div>
 
-          <div style={{ marginTop: "14px", display: "flex", justifyContent: "center" }}>
-            <button onClick={doCopy}
-              style={{ padding: "12px 44px", background: copied ? "#0C1A0C" : "#C8F04E", border: "none", borderRadius: "4px", color: copied ? "#4E8A4E" : "#0A0A0A", fontSize: "12px", fontWeight: "700", letterSpacing: "0.08em", cursor: "pointer", fontFamily: "'IBM Plex Mono', monospace", transition: "all 0.2s" }}>
-              {copied ? "✓  Copied to Clipboard!" : "Copy Full Prompt to Clipboard"}
-            </button>
+          {/* Raw textarea */}
+          <div className="fade-up fade-up-3" style={{ marginTop: 24 }}>
+            <div style={{ fontSize: 11, color: "#38383E", marginBottom: 7, letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'DM Mono', monospace" }}>Raw — click to select all</div>
+            <textarea readOnly value={assembled} rows={10} onClick={e => e.target.select()}
+              style={{ width: "100%", background: "#070709", border: "1px solid #1E1E26", borderRadius: 10, padding: "14px 16px", fontSize: 12, color: "#5A5A6A", lineHeight: 1.8, outline: "none", cursor: "text", resize: "vertical", fontFamily: "'DM Mono', monospace" }} />
           </div>
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {/* ── POWER MOVES VIEW ── */}
-      {view === "power" && (
-        <div style={{ padding: "36px 28px", maxWidth: "940px", margin: "0 auto" }}>
-          <div style={{ marginBottom: "5px", fontSize: "9px", letterSpacing: "0.2em", color: "#383838", textTransform: "uppercase" }}>Beyond the Template</div>
-          <h2 style={{ fontFamily: "'Bebas Neue'", fontSize: "30px", letterSpacing: "0.06em", color: "#E8E8E8", marginBottom: "5px" }}>Power Moves</h2>
-          <p style={{ fontSize: "11px", color: "#4A4A4A", marginBottom: "24px", lineHeight: "1.7" }}>Once you've mastered the 5-part template, these patterns unlock the next tier — using AI as a sparring partner, tutor, and persistent collaborator.</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-            {POWER_MOVES.map((pm, i) => <PowerCard key={i} pm={pm} />)}
-          </div>
-          <div style={{ marginTop: "24px", padding: "16px 20px", background: "#0B150B", border: "1px solid #152015", borderRadius: "6px" }}>
-            <div style={{ fontSize: "12px", color: "#4E8A4E", fontWeight: "600", marginBottom: "5px" }}>The Real Shortcut: Put In The Reps</div>
-            <p style={{ fontSize: "10px", color: "#324A32", lineHeight: "1.8" }}>Watching tutorials doesn't count. The people who win with AI are using it for hours every day. Use this template, run the power moves, and iterate until they become instinct. There's no other way.</p>
-          </div>
+  // ══════════════════════════════════════════════════════════════════════════
+  // POWER MOVES VIEW
+  // ══════════════════════════════════════════════════════════════════════════
+  return (
+    <div style={{ fontFamily: "'DM Sans', sans-serif", background: "#070709", minHeight: "100vh", color: "#EEEEF2" }}>
+      <style>{GLOBAL_CSS}</style>
+      <Header />
+      <div style={{ padding: isMobile ? "20px 16px" : "36px 32px", maxWidth: 880, margin: "0 auto" }}>
+        <div className="fade-up fade-up-1">
+          <div style={{ fontSize: 10, letterSpacing: "0.16em", color: "#38383E", textTransform: "uppercase", fontFamily: "'DM Mono', monospace", marginBottom: 5 }}>Beyond the Template</div>
+          <h2 style={{ fontSize: 28, fontWeight: 600, color: "#EEEEF2", marginBottom: 6, letterSpacing: "-0.02em" }}>Power Moves</h2>
+          <p style={{ fontSize: 13, color: "#9898A8", marginBottom: 28, lineHeight: 1.7, maxWidth: 560 }}>Once you've mastered the 5-part template, these patterns unlock the next tier — using AI as a sparring partner, tutor, and persistent collaborator.</p>
         </div>
-      )}
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
+          {POWER_MOVES.map((pm, i) => <PowerCard key={i} pm={pm} delay={i * 0.06} />)}
+        </div>
+        <div className="fade-up" style={{ marginTop: 28, padding: "18px 22px", background: "#070709", border: "1px solid #1E1E26", borderRadius: 12 }}>
+          <div style={{ fontSize: 13, color: "#4ABA74", fontWeight: 600, marginBottom: 5 }}>The Real Shortcut: Put In The Reps</div>
+          <p style={{ fontSize: 12, color: "#4ABA74", lineHeight: 1.8 }}>Watching tutorials doesn't count. The people who win with AI are using it for hours every day. Use this template, run the power moves, and iterate until they become instinct.</p>
+        </div>
+      </div>
     </div>
   );
 }
